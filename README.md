@@ -1,36 +1,144 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# FairwayFund
+
+**Play Golf. Support Charities. Win Prizes.**
+
+FairwayFund combines your passion for golf with charitable giving. Submit your Stableford scores, enter monthly draws, support amazing causes, and win prizes.
+
+## Features
+
+- **Score Tracking**: Log your Stableford scores (1-45 points)
+- **Charity Support**: Choose from verified charities, minimum 10% contribution
+- **Monthly Draws**: Automatic entry with 3-match, 4-match, and 5-match prize pools
+- **Winner Verification**: Fair and transparent proof submission process
+- **Flexible Subscriptions**: Monthly or yearly plans
+
+## Tech Stack
+
+- **Framework**: Next.js 16 with App Router
+- **Language**: TypeScript
+- **Styling**: Tailwind CSS
+- **Validation**: Zod
+- **Testing**: Vitest + Playwright
+- **Icons**: Lucide React
+- **Charts**: Recharts
 
 ## Getting Started
 
-First, run the development server:
+### Prerequisites
+
+- Node.js 18+ (recommended: Node 20)
+- npm
+
+### Installation
 
 ```bash
+# Clone the repository
+git clone <repository-url>
+cd fairwayfund
+
+# Install dependencies
+npm install
+
+# Set up environment variables
+cp .env.example .env.local
+
+# Run development server
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000) in your browser.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Available Scripts
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+# Development
+npm run dev          # Start development server
 
-## Learn More
+# Production
+npm run build        # Build for production
+npm start           # Start production server
 
-To learn more about Next.js, take a look at the following resources:
+# Code Quality
+npm run lint        # Run ESLint
+npm run typecheck   # Run TypeScript type checking
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+# Testing
+npm test           # Run unit tests
+npm run test:watch # Run tests in watch mode
+npm run test:e2e   # Run E2E tests
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Project Structure
 
-## Deploy on Vercel
+```
+fairwayfund/
+├── app/                    # Next.js App Router pages
+│   ├── layout.tsx         # Root layout
+│   ├── page.tsx           # Homepage
+│   ├── login/             # Login page
+│   ├── signup/            # Signup page
+│   ├── dashboard/         # User dashboard
+│   ├── admin/             # Admin panel
+│   └── ...
+├── components/            # React components
+│   ├── ui/               # Base UI components
+│   ├── layout/           # Layout components
+│   ├── forms/            # Form components
+│   ├── marketing/        # Marketing components
+│   ├── dashboard/        # Dashboard components
+│   └── admin/            # Admin components
+├── lib/                  # Business logic
+│   ├── services/        # Service layer
+│   ├── validation/      # Zod schemas
+│   ├── utils/           # Utilities
+│   └── config/          # App configuration
+├── types/               # TypeScript types
+├── data/mock/           # Mock data
+├── tests/               # Tests
+├── docs/                # Documentation
+└── config/              # Route/navigation config
+```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Development Status
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+### ✅ Complete
+
+- Project foundation and folder structure
+- Type definitions
+- Validation schemas
+- Mock data
+- Service layer abstractions
+- Reusable UI components
+- Marketing pages (Homepage, How It Works, Pricing, Charities)
+- Authentication UI (Login, Signup)
+- Dashboard foundation
+- Admin panel foundation
+- Unit tests
+- E2E smoke tests
+- Documentation
+
+### 🔄 Not Yet Connected
+
+- **Supabase**: Authentication and database
+- **Vercel**: Deployment
+- **Supabase Storage**: File storage
+
+### ✅ Implemented (Test Mode)
+
+- **Test Payment Mode**: Development-only payment simulation (no real payment gateway required)
+
+The architecture is ready for these integrations. See `docs/architecture.md` for details.
+
+## Documentation
+
+- [Architecture](./docs/architecture.md) - System design and integration points
+- [Business Rules](./docs/business-rules.md) - Core rules and requirements
+- [Development Guide](./docs/development.md) - Development workflow
+
+## License
+
+All rights reserved.
+
+## Contact
+
+For more information, visit [fairwayfund.com](https://fairwayfund.com)
