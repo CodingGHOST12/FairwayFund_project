@@ -35,8 +35,16 @@ export function AuthProvider({ children }: AuthProviderProps) {
         const currentSession = await supabaseAuthService.getCurrentSession();
         if (currentSession) {
           const profile = await supabaseAuthService.getProfile(currentSession.user.id);
+          console.log('[AuthProvider] initAuth - profile fetch:', { 
+            userId: currentSession.user.id, 
+            profileFound: !!profile, 
+            profileRole: profile?.role,
+            sessionUserRole: currentSession.user?.role 
+          });
           if (mounted) {
-            const userWithProfile = profile || mapSupabaseUser(currentSession.user, currentSession.user.role);
+            // If profile fetch fails, preserve the role from the session
+            const fallbackRole = (profile?.role || currentSession.user?.role) as 'subscriber' | 'admin' | undefined;
+            const userWithProfile = profile || mapSupabaseUser(currentSession.user, fallbackRole);
             setUser(userWithProfile);
             setSession({
               ...currentSession,
@@ -62,7 +70,15 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
       if (event === 'SIGNED_IN' && session) {
         const profile = await supabaseAuthService.getProfile(session.user.id);
-        const fallbackRole = profile?.role;
+        // DEBUG: Log profile fetch result
+        console.log('[AuthProvider] SIGNED_IN - profile fetch:', { 
+          userId: session.user.id, 
+          profileFound: !!profile, 
+          profileRole: profile?.role,
+          sessionUserRole: session.user?.role 
+        });
+        // If profile fetch fails, preserve the role from the session (set by login)
+        const fallbackRole = (profile?.role || session.user?.role) as 'subscriber' | 'admin' | undefined;
         const userWithProfile = profile || mapSupabaseUser(session.user, fallbackRole);
         setUser(userWithProfile);
         setSession({
@@ -75,7 +91,13 @@ export function AuthProvider({ children }: AuthProviderProps) {
       } else if (event === 'TOKEN_REFRESHED' && session) {
         // Session refreshed, fetch profile to get current role
         const profile = await supabaseAuthService.getProfile(session.user.id);
-        const fallbackRole = profile?.role;
+        console.log('[AuthProvider] TOKEN_REFRESHED - profile fetch:', { 
+          userId: session.user.id, 
+          profileFound: !!profile, 
+          profileRole: profile?.role,
+          sessionUserRole: session.user?.role 
+        });
+        const fallbackRole = (profile?.role || session.user?.role) as 'subscriber' | 'admin' | undefined;
         const userWithProfile = profile || mapSupabaseUser(session.user, fallbackRole);
         setUser(userWithProfile);
         setSession({
@@ -100,6 +122,10 @@ export function AuthProvider({ children }: AuthProviderProps) {
     
     if (result.data) {
       // Session already includes profile role from the service
+      console.log('[AuthProvider] login - result:', { 
+        userId: result.data.user.id, 
+        userRole: result.data.user.role 
+      });
       setUser(result.data.user);
       setSession(result.data);
       return { success: true };

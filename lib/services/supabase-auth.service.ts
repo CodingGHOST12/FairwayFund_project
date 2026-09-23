@@ -81,6 +81,11 @@ export const supabaseAuthService = {
 
     if (data.user && data.session) {
       const profile = await fetchProfile(data.user.id);
+      console.log('[supabaseAuthService] login - profile fetch:', { 
+        userId: data.user.id, 
+        profileFound: !!profile, 
+        profileRole: profile?.role 
+      });
       return { data: mapSession(data.session, profile?.role) };
     }
 
@@ -101,6 +106,11 @@ export const supabaseAuthService = {
     }
 
     const profile = await fetchProfile(session.user.id);
+    console.log('[supabaseAuthService] getCurrentSession - profile fetch:', { 
+      userId: session.user.id, 
+      profileFound: !!profile, 
+      profileRole: profile?.role 
+    });
     return mapSession(session, profile?.role);
   },
 
