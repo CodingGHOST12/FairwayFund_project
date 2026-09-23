@@ -60,6 +60,7 @@ export const supabaseAuthService = {
     }
 
     if (data.user) {
+      // User created successfully. Session may be null if email confirmation required.
       const session = data.session ? mapSession(data.session) : null;
       return { data: session };
     }

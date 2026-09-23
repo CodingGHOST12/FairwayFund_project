@@ -115,13 +115,9 @@ export function AuthProvider({ children }: AuthProviderProps) {
       return { success: false, error: result.error.message };
     }
     
-    if (result.data) {
-      // Signup successful but email confirmation may be required
-      // User will be authenticated after email confirmation via onAuthStateChange
-      return { success: true };
-    }
-    
-    return { success: false, error: 'Signup failed' };
+    // Signup successful (user created). Session may be null if email confirmation required.
+    // User will be authenticated after email confirmation via onAuthStateChange
+    return { success: true };
   };
 
   const logout = async () => {
