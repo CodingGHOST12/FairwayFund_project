@@ -19,7 +19,7 @@ const fetchProfile = async (userId: string): Promise<AuthUser | null> => {
   const supabase = getSupabaseClient();
   const { data, error } = await supabase
     .from('profiles')
-    .select('id, email, name, role, handicap, home_club, phone_number, created_at')
+    .select('id, email, name, role, avatar_url, phone, created_at')
     .eq('id', userId)
     .single();
 
@@ -32,9 +32,9 @@ const fetchProfile = async (userId: string): Promise<AuthUser | null> => {
     email: data.email,
     name: data.name,
     role: data.role as 'subscriber' | 'admin',
-    handicap: data.handicap,
-    homeClub: data.home_club,
-    phoneNumber: data.phone_number,
+    handicap: undefined,
+    homeClub: data.avatar_url || undefined,
+    phoneNumber: data.phone || undefined,
     createdAt: new Date(data.created_at),
   };
 };
