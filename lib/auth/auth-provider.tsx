@@ -62,9 +62,11 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
       if (event === 'SIGNED_IN' && session) {
         const profile = await supabaseAuthService.getProfile(session.user.id);
-        setUser(profile || mapSupabaseUser(session.user));
+        const fallbackRole = profile?.role;
+        const userWithProfile = profile || mapSupabaseUser(session.user, fallbackRole);
+        setUser(userWithProfile);
         setSession({
-          user: profile || mapSupabaseUser(session.user),
+          user: userWithProfile,
           expiresAt: session.expires_at ? new Date(session.expires_at * 1000) : new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
         });
       } else if (event === 'SIGNED_OUT') {
@@ -73,7 +75,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
       } else if (event === 'TOKEN_REFRESHED' && session) {
         // Session refreshed, fetch profile to get current role
         const profile = await supabaseAuthService.getProfile(session.user.id);
-        const userWithProfile = profile || mapSupabaseUser(session.user);
+        const fallbackRole = profile?.role;
+        const userWithProfile = profile || mapSupabaseUser(session.user, fallbackRole);
         setUser(userWithProfile);
         setSession({
           user: userWithProfile,
