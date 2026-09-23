@@ -1,7 +1,7 @@
 import { getSupabaseClient } from '@/lib/supabaseClient';
 import { AuthResult, SignupCredentials, AuthSession, AuthUser } from '@/types/auth';
 
-const mapSession = (session: any): AuthSession => {
+const mapSession = (session: any, role?: 'subscriber' | 'admin'): AuthSession => {
   const user = session.user;
   return {
     user: {
@@ -9,7 +9,7 @@ const mapSession = (session: any): AuthSession => {
       email: user.email || '',
       name: user.user_metadata?.name || '',
       createdAt: new Date(user.created_at),
-      role: 'subscriber' as const,
+      role: role || (user.user_metadata?.role as 'subscriber' | 'admin') || 'subscriber',
     },
     expiresAt: session.expires_at ? new Date(session.expires_at * 1000) : new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
   };
@@ -79,7 +79,8 @@ export const supabaseAuthService = {
     }
 
     if (data.user && data.session) {
-      return { data: mapSession(data.session) };
+      const profile = await fetchProfile(data.user.id);
+      return { data: mapSession(data.session, profile?.role) };
     }
 
     return { error: { message: 'No session returned from Supabase' } };
@@ -98,7 +99,8 @@ export const supabaseAuthService = {
       return null;
     }
 
-    return mapSession(session);
+    const profile = await fetchProfile(session.user.id);
+    return mapSession(session, profile?.role);
   },
 
   async getProfile(userId: string): Promise<AuthUser | null> {

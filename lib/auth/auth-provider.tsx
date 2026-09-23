@@ -11,13 +11,13 @@ type AuthProviderProps = {
   children: ReactNode;
 };
 
-function mapSupabaseUser(supabaseUser: any): AuthUser {
+function mapSupabaseUser(supabaseUser: any, role?: 'subscriber' | 'admin'): AuthUser {
   return {
     id: supabaseUser.id,
     email: supabaseUser.email || '',
     name: supabaseUser.user_metadata?.name || '',
     createdAt: new Date(supabaseUser.created_at),
-    role: 'subscriber',
+    role: role || (supabaseUser.user_metadata?.role as 'subscriber' | 'admin') || 'subscriber',
   };
 }
 
@@ -36,8 +36,12 @@ export function AuthProvider({ children }: AuthProviderProps) {
         if (currentSession) {
           const profile = await supabaseAuthService.getProfile(currentSession.user.id);
           if (mounted) {
-            setUser(profile || currentSession.user);
-            setSession(currentSession);
+            const userWithProfile = profile || mapSupabaseUser(currentSession.user, currentSession.user.role);
+            setUser(userWithProfile);
+            setSession({
+              ...currentSession,
+              user: userWithProfile,
+            });
           }
         }
       } catch (error) {
@@ -67,9 +71,12 @@ export function AuthProvider({ children }: AuthProviderProps) {
         setUser(null);
         setSession(null);
       } else if (event === 'TOKEN_REFRESHED' && session) {
-        // Session refreshed, update if needed
+        // Session refreshed, fetch profile to get current role
+        const profile = await supabaseAuthService.getProfile(session.user.id);
+        const userWithProfile = profile || mapSupabaseUser(session.user);
+        setUser(userWithProfile);
         setSession({
-          user: mapSupabaseUser(session.user),
+          user: userWithProfile,
           expiresAt: session.expires_at ? new Date(session.expires_at * 1000) : new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
         });
       }
@@ -89,8 +96,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
     }
     
     if (result.data) {
-      const profile = await supabaseAuthService.getProfile(result.data.user.id);
-      setUser(profile || result.data.user);
+      // Session already includes profile role from the service
+      setUser(result.data.user);
       setSession(result.data);
       return { success: true };
     }
