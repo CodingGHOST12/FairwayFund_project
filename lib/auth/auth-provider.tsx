@@ -4,11 +4,22 @@ import { useState, useEffect, ReactNode } from 'react';
 import { useRouter } from 'next/navigation';
 import { AuthContext } from './auth-context';
 import { AuthUser, AuthSession } from '@/types/auth';
-import { authService } from '@/lib/services/auth.service';
+import { supabaseAuthService } from '@/lib/services/supabase-auth.service';
+import { getSupabaseClient } from '@/lib/supabaseClient';
 
 type AuthProviderProps = {
   children: ReactNode;
 };
+
+function mapSupabaseUser(supabaseUser: any): AuthUser {
+  return {
+    id: supabaseUser.id,
+    email: supabaseUser.email || '',
+    name: supabaseUser.user_metadata?.name || '',
+    createdAt: new Date(supabaseUser.created_at),
+    role: 'subscriber',
+  };
+}
 
 export function AuthProvider({ children }: AuthProviderProps) {
   const [user, setUser] = useState<AuthUser | null>(null);
@@ -17,32 +28,69 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const router = useRouter();
 
   useEffect(() => {
+    let mounted = true;
+
     const initAuth = async () => {
       try {
-        const currentSession = await authService.getCurrentSession();
+        const currentSession = await supabaseAuthService.getCurrentSession();
         if (currentSession) {
-          setUser(currentSession.user);
-          setSession(currentSession);
+          const profile = await supabaseAuthService.getProfile(currentSession.user.id);
+          if (mounted) {
+            setUser(profile || currentSession.user);
+            setSession(currentSession);
+          }
         }
       } catch (error) {
         console.error('Failed to initialize auth:', error);
       } finally {
-        setIsLoading(false);
+        if (mounted) {
+          setIsLoading(false);
+        }
       }
     };
 
     initAuth();
+
+    // Listen for auth state changes
+    const supabase = getSupabaseClient();
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (!mounted) return;
+
+      if (event === 'SIGNED_IN' && session) {
+        const profile = await supabaseAuthService.getProfile(session.user.id);
+        setUser(profile || mapSupabaseUser(session.user));
+        setSession({
+          user: profile || mapSupabaseUser(session.user),
+          expiresAt: session.expires_at ? new Date(session.expires_at * 1000) : new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+        });
+      } else if (event === 'SIGNED_OUT') {
+        setUser(null);
+        setSession(null);
+      } else if (event === 'TOKEN_REFRESHED' && session) {
+        // Session refreshed, update if needed
+        setSession({
+          user: mapSupabaseUser(session.user),
+          expiresAt: session.expires_at ? new Date(session.expires_at * 1000) : new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+        });
+      }
+    });
+
+    return () => {
+      mounted = false;
+      subscription.unsubscribe();
+    };
   }, []);
 
   const login = async (email: string, password: string) => {
-    const result = await authService.login({ email, password });
+    const result = await supabaseAuthService.login({ email, password });
     
     if (result.error) {
       return { success: false, error: result.error.message };
     }
     
     if (result.data) {
-      setUser(result.data.user);
+      const profile = await supabaseAuthService.getProfile(result.data.user.id);
+      setUser(profile || result.data.user);
       setSession(result.data);
       return { success: true };
     }
@@ -51,15 +99,15 @@ export function AuthProvider({ children }: AuthProviderProps) {
   };
 
   const signup = async (email: string, password: string, name: string) => {
-    const result = await authService.signup({ email, password, name });
+    const result = await supabaseAuthService.signup({ email, password, name });
     
     if (result.error) {
       return { success: false, error: result.error.message };
     }
     
     if (result.data) {
-      setUser(result.data.user);
-      setSession(result.data);
+      // Signup successful but email confirmation may be required
+      // User will be authenticated after email confirmation via onAuthStateChange
       return { success: true };
     }
     
@@ -67,7 +115,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
   };
 
   const logout = async () => {
-    await authService.logout();
+    await supabaseAuthService.logout();
     setUser(null);
     setSession(null);
     router.push('/');

@@ -4,11 +4,9 @@ export type User = {
   name: string;
   createdAt: Date;
   role: 'subscriber' | 'admin';
-};
-
-export type Profile = {
-  userId: string;
   handicap?: number;
   homeClub?: string;
   phoneNumber?: string;
 };
+
+export type Profile = User;

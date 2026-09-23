@@ -65,7 +65,7 @@ export function LoginForm() {
         type="email"
         name="email"
         label="Email"
-        placeholder="subscriber@example.local"
+        placeholder="your@email.com"
         value={formData.email}
         onChange={handleChange}
         error={errors.email}
@@ -115,12 +115,6 @@ export function LoginForm() {
           <p className="text-sm text-red-800">{generalError}</p>
         </div>
       )}
-
-      <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
-        <p className="text-xs text-blue-700 mb-2"><strong>Demo accounts:</strong></p>
-        <p className="text-xs text-blue-600 mb-1">Subscriber: subscriber@example.local / subscriber123</p>
-        <p className="text-xs text-blue-600">Admin: admin@example.local / admin123</p>
-      </div>
 
       <Button type="submit" loading={loading} className="w-full">
         {loading ? 'Logging in...' : 'Login'}
