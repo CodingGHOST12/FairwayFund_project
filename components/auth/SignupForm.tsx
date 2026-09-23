@@ -19,6 +19,7 @@ export function SignupForm() {
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState<Partial<Record<keyof SignupFormData, string>>>({});
   const [generalError, setGeneralError] = useState('');
+  const [generalSuccess, setGeneralSuccess] = useState('');
 
   const { signup } = useAuth();
   const router = useRouter();
@@ -30,12 +31,14 @@ export function SignupForm() {
       setErrors(prev => ({ ...prev, [name]: undefined }));
     }
     setGeneralError('');
+    setGeneralSuccess('');
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrors({});
     setGeneralError('');
+    setGeneralSuccess('');
 
     const result = signupSchema.safeParse(formData);
     if (!result.success) {
@@ -54,7 +57,9 @@ export function SignupForm() {
       const { success, error } = await signup(formData.email, formData.password, formData.name);
       
       if (success) {
-        router.push('/dashboard');
+        // Signup successful - check if email confirmation is needed
+        // If no immediate session, email confirmation is required
+        setGeneralSuccess('Account created! Please check your email to verify your account.');
       } else {
         setGeneralError(error || 'Signup failed');
       }
@@ -117,7 +122,7 @@ export function SignupForm() {
             ) : (
               <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542 7-4.477 0-8.268-2.943-9.542 7z" />
               </svg>
             )}
           </button>
@@ -155,7 +160,7 @@ export function SignupForm() {
             ) : (
               <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542 7-4.477 0-8.268-2.943-9.542 7z" />
               </svg>
             )}
           </button>
@@ -166,6 +171,12 @@ export function SignupForm() {
       {generalError && (
         <div className="p-3 bg-red-50 border border-red-200 rounded-lg">
           <p className="text-sm text-red-800">{generalError}</p>
+        </div>
+      )}
+
+      {generalSuccess && (
+        <div className="p-3 bg-green-50 border border-green-200 rounded-lg">
+          <p className="text-sm text-green-800">{generalSuccess}</p>
         </div>
       )}
 
